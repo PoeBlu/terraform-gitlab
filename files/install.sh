@@ -31,6 +31,13 @@ GITLAB_RUNNER_DATA_PATH="/srv/gitlab-runner"
 log "GITLAB_DATA_PATH=$GITLAB_DATA_PATH"
 log "GITLAB_RUNNER_DATA_ROOT_PATH=$GITLAB_RUNNER_DATA_PATH"
 
+log "Install prerequisites ..."
+sudo apt-get update -qq >/dev/null
+sudo apt-get install -qq -y apt-transport-https
+
+log "Install docker ..."
+wget -nv -O - https://get.docker.com/ | sh
+
 log "Create volume directories ..."
 mkdir -p $GITLAB_DATA_PATH/config
 mkdir -p $GITLAB_DATA_PATH/data

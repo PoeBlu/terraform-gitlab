@@ -22,7 +22,7 @@ resource "null_resource" "install" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/install.sh",
-      "/tmp/install.sh ${var.gitlab_docker_repo} ${var.gitlab_docker_tag} ${var.gitlab_external_url} \"${var.gitlab_config_rb}\""
+      "/tmp/install.sh ${var.gitlab_docker_repo} ${var.gitlab_docker_tag} ${var.gitlab_external_url} \"${var.gitlab_config_rb}\" ${var.gitlab_data_path} ${var.gitlab_runner_data_path}"
     ]
   }
 

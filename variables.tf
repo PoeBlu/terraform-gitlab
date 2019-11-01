@@ -32,3 +32,13 @@ variable "gitlab_config_rb" {
   description = "GitLab settings (gitlab.rb)"
   default     = ""
 }
+
+variable "gitlab_data_path" {
+  description = "GitLab absolute path to GitLab data"
+  default     = "/srv/gitlab"
+}
+
+variable "gitlab_runner_data_path" {
+  description = "GitLab absolute path to GitLab Runner data"
+  default     = "/srv/gitlab-runner"
+}

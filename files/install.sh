@@ -18,18 +18,21 @@ GITLAB_DOCKER_REPO="$1"
 GITLAB_DOCKER_TAG="$2"
 GITLAB_EXTERNAL_URL="$3"
 GITLAB_CONFIG_RB="$4"
-
-[ "$(docker ps -a | grep gitlab)" ] && docker stop gitlab && docker rm gitlab
+GITLAB_DATA_PATH="$5"
+GITLAB_RUNNER_DATA_PATH="$6"
 
 log "GITLAB_DOCKER_REPO=$GITLAB_DOCKER_REPO"
 log "GITLAB_DOCKER_TAG=$GITLAB_DOCKER_TAG"
 log "GITLAB_EXTERNAL_URL=$GITLAB_EXTERNAL_URL"
 log "GITLAB_CONFIG_RB=$GITLAB_CONFIG_RB"
-
-GITLAB_DATA_PATH="/srv/gitlab"
-GITLAB_RUNNER_DATA_PATH="/srv/gitlab-runner"
 log "GITLAB_DATA_PATH=$GITLAB_DATA_PATH"
-log "GITLAB_RUNNER_DATA_ROOT_PATH=$GITLAB_RUNNER_DATA_PATH"
+log "GITLAB_RUNNER_DATA_PATH=$GITLAB_RUNNER_DATA_PATH"
+
+log "Stop & remove docker container gitlab if it exists ..."
+[ "$(docker ps -a | grep gitlab)" ] && docker stop gitlab && docker rm gitlab
+
+log "Stop & remove docker container gitlab-runner if exists ..."
+[ "$(docker ps -a | grep gitlab-runner)" ] && docker stop gitlab-runner && docker rm gitlab-runner
 
 log "Install prerequisites ..."
 sudo apt-get update -qq >/dev/null
@@ -66,8 +69,6 @@ docker run --detach \
 # (crontab -l ; echo "00 02 * * * /usr/bin/docker exec gitlab gitlab-rake gitlab:backup:create STRATEGY=copy CRON=1 && cd $BACKUP_FOLDER && ls -t | tail -n +3 | xargs --no-run-if-empty rm --") | crontab -
 
 log "Installing GitLab Runner ..."
-
-[ "$(docker ps -a | grep gitlab-runner)" ] && docker stop gitlab-runner && docker rm gitlab-runner
 
 mkdir -p $GITLAB_RUNNER_DATA_PATH/config
 

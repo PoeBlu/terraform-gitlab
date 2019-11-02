@@ -16,11 +16,10 @@ tbd.
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
 | gitlab\_config\_rb | GitLab settings (gitlab.rb) | string | `""` | no |
-| gitlab\_data\_path | GitLab absolute path to GitLab data | string | `"/srv/gitlab"` | no |
+| gitlab\_data\_path | GitLab absolute path to GitLab data | string | `"/srv/gitlab-data"` | no |
 | gitlab\_docker\_repo | GitLab Docker repo - check https://hub.docker.com/u/gitlab | string | `"gitlab-ce"` | no |
 | gitlab\_docker\_tag | GitLab Docker tag (version) - check https://hub.docker.com/u/gitlab | string | `"12.4.1-ce.0"` | no |
 | gitlab\_external\_url | GitLab external url | string | `""` | no |
-| gitlab\_runner\_data\_path | GitLab absolute path to GitLab Runner data | string | `"/srv/gitlab-runner"` | no |
 | ssh\_host | SSH host | string | `"192.168.0.100"` | no |
 | ssh\_private\_key\_path | SSH private key path | string | `"~/.ssh/id_rsa"` | no |
 | ssh\_user | SSH user | string | `"root"` | no |

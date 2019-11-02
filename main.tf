@@ -5,6 +5,7 @@ resource "null_resource" "install" {
     gitlab_docker_tag   = md5(var.gitlab_docker_tag)
     gitlab_external_url = md5(var.gitlab_external_url)
     gitlab_config_rb    = md5(var.gitlab_config_rb)
+    gitlab_data_path    = md5(var.gitlab_data_path)
   }
 
   connection {
@@ -22,7 +23,7 @@ resource "null_resource" "install" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/install.sh",
-      "/tmp/install.sh ${var.gitlab_docker_repo} ${var.gitlab_docker_tag} ${var.gitlab_external_url} \"${var.gitlab_config_rb}\" ${var.gitlab_data_path} ${var.gitlab_runner_data_path}"
+      "/tmp/install.sh ${var.gitlab_docker_repo} ${var.gitlab_docker_tag} ${var.gitlab_external_url} \"${var.gitlab_config_rb}\" ${var.gitlab_data_path}"
     ]
   }
 

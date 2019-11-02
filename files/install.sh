@@ -19,20 +19,15 @@ GITLAB_DOCKER_TAG="$2"
 GITLAB_EXTERNAL_URL="$3"
 GITLAB_CONFIG_RB="$4"
 GITLAB_DATA_PATH="$5"
-GITLAB_RUNNER_DATA_PATH="$6"
 
 log "GITLAB_DOCKER_REPO=$GITLAB_DOCKER_REPO"
 log "GITLAB_DOCKER_TAG=$GITLAB_DOCKER_TAG"
 log "GITLAB_EXTERNAL_URL=$GITLAB_EXTERNAL_URL"
 log "GITLAB_CONFIG_RB=$GITLAB_CONFIG_RB"
 log "GITLAB_DATA_PATH=$GITLAB_DATA_PATH"
-log "GITLAB_RUNNER_DATA_PATH=$GITLAB_RUNNER_DATA_PATH"
 
-log "Stop & remove docker container gitlab if it exists ..."
-[ "$(docker ps -a | grep gitlab)" ] && docker stop gitlab && docker rm gitlab
-
-log "Stop & remove docker container gitlab-runner if exists ..."
-[ "$(docker ps -a | grep gitlab-runner)" ] && docker stop gitlab-runner && docker rm gitlab-runner
+log "Waiting 20 sec. for package managers ..."
+sleep 20
 
 log "Install prerequisites ..."
 sudo apt-get update -qq >/dev/null
@@ -41,13 +36,19 @@ sudo apt-get install -qq -y apt-transport-https
 log "Install docker ..."
 wget -nv -O - https://get.docker.com/ | sh
 
+log "Stop & remove docker container gitlab if it exists ..."
+[ "$(docker ps -a | grep gitlab)" ] && docker stop gitlab && docker rm gitlab
+
+log "Stop & remove docker container gitlab-runner if exists ..."
+[ "$(docker ps -a | grep gitlab-runner)" ] && docker stop gitlab-runner && docker rm gitlab-runner
+
 log "Create volume directories ..."
-mkdir -p $GITLAB_DATA_PATH/config
-mkdir -p $GITLAB_DATA_PATH/data
+mkdir -p $GITLAB_DATA_PATH/gitlab/config
+mkdir -p $GITLAB_DATA_PATH/gitlab/data
 mkdir -p /var/log/gitlab
 
-log "Write gitlab.rb to $GITLAB_DATA_PATH/config/gitlab.rb ..."
-echo "$GITLAB_CONFIG_RB" > $GITLAB_DATA_PATH/config/gitlab.rb
+log "Write gitlab.rb to $GITLAB_DATA_PATH/gitlab/config/gitlab.rb ..."
+echo "$GITLAB_CONFIG_RB" > $GITLAB_DATA_PATH/gitlab/config/gitlab.rb
 
 log "Run docker container (detached) ..."
 docker run --detach \
@@ -57,8 +58,8 @@ docker run --detach \
   --publish 443:443 \
   --publish 5000:5000 \
   --publish 9022:22 \
-  --volume $GITLAB_DATA_PATH/data:/var/opt/gitlab \
-  --volume $GITLAB_DATA_PATH/config:/etc/gitlab \
+  --volume $GITLAB_DATA_PATH/gitlab/data:/var/opt/gitlab \
+  --volume $GITLAB_DATA_PATH/gitlab/config:/etc/gitlab \
   --volume /var/log/gitlab:/var/log/gitlab \
   gitlab/${GITLAB_DOCKER_REPO}:${GITLAB_DOCKER_TAG}
 
@@ -70,16 +71,16 @@ docker run --detach \
 
 log "Installing GitLab Runner ..."
 
-mkdir -p $GITLAB_RUNNER_DATA_PATH/config
+mkdir -p $GITLAB_DATA_PATH/gitlab-runner/config
 
 docker run --detach \
   --name gitlab-runner \
   --restart unless-stopped \
-  --volume $GITLAB_RUNNER_DATA_PATH/config:/etc/gitlab-runner \
+  --volume $GITLAB_DATA_PATH/gitlab-runner/config:/etc/gitlab-runner \
   --volume /var/run/docker.sock:/var/run/docker.sock \
   gitlab/gitlab-runner:latest
 
-cat > $GITLAB_RUNNER_DATA_PATH/config/config.toml <<- EOF
+cat > $GITLAB_DATA_PATH/gitlab-runner/config/config.toml <<- EOF
 concurrent = 2
 check_interval = 5
 EOF
@@ -92,7 +93,7 @@ EOF
 # log "Waiting for GitLab on $GITLAB_DOCKER_IP ..."
 # while ! curl -sSf "http://${GITLAB_DOCKER_IP}/-/readiness" > /dev/null; do sleep 5; done;
 
-while ! curl -sSf "$GITLAB_EXTERNAL_URL" > /dev/null; do sleep 5; done;
+while ! curl -sSf "$GITLAB_EXTERNAL_URL/users/sign_in" > /dev/null; do sleep 5; done;
 
 REGISTRATION_TOKEN=$(docker exec gitlab gitlab-rails runner --environment=production "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token")
 
